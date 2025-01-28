@@ -47,6 +47,7 @@ app.post('/partners', async (req, res) => {
 
     res.status(201).json({
       id: partnerResult.insertId,
+      name,
       user_id: userId,
       company_name,
       created_at: createdAt,
@@ -56,8 +57,36 @@ app.post('/partners', async (req, res) => {
   }
 });
 
-app.post('/customers', (req, res) => {
+app.post('/customers', async (req, res) => {
   const { name, email, password, address, phone } = req.body;
+
+  const connection = await createConnection();
+  try {
+    const createdAt = new Date();
+    const hashedPassword = bcrypt.hashSync(password, 10); // 10 é a força da senha
+
+    const [userResult] = await connection.execute<mysql.ResultSetHeader>(
+      'INSERT INTO users (name, email, password, created_at) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, createdAt]
+    );
+
+    const userId = userResult.insertId;
+    const [partnerResult] = await connection.execute<mysql.ResultSetHeader>(
+      'INSERT INTO customers (user_id, address, phone, created_at) VALUES (?, ?, ?, ?)',
+      [userId, address, phone, createdAt]
+    );
+
+    res.status(201).json({
+      id: partnerResult.insertId,
+      name,
+      user_id: userId,
+      address,
+      phone,
+      created_at: createdAt,
+    });
+  } finally {
+    await connection.end();
+  }
 });
 
 app.post('/partners/events', (req, res) => {
@@ -80,6 +109,13 @@ app.get('/events/:eventId', (req, res) => {
   res.send();
 });
 
-app.listen(3000, () => {
+app.listen(3000, async () => {
+  const connection = await createConnection();
+  await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
+  await connection.execute('TRUNCATE TABLE events');
+  await connection.execute('TRUNCATE TABLE customers');
+  await connection.execute('TRUNCATE TABLE partners');
+  await connection.execute('TRUNCATE TABLE users');
+  await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
   console.log('Running in http://localhost:3000');
 });
