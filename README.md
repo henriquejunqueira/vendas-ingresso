@@ -16,6 +16,8 @@
 - Instalação do mysql2: `$ npm install mysql2`
 - Instalação do bcrypt: `$ npm install bcrypt`
 - Instalação das tipagens do typescript para o bcrypt como dependência de desenvolvimento: `$ npm install --save-dev @types/bcrypt`
+- Instalação do jsonwebtoken para trabalhar com JWT: `$ npm install jsonwebtoken`
+- Instalação das tipagens do typescript para o jswebtoken como dependência de desenvolvimento: `$ npm i --save-dev @types/jsonwebtoken`
 
 ### Rodando projeto
 

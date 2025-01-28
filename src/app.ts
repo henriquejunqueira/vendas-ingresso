@@ -1,6 +1,7 @@
 import express from 'express';
 import * as mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 function createConnection() {
   return mysql.createConnection({
@@ -20,9 +21,33 @@ app.get('/', (req, res) => {
   res.json({ message: 'Hello World!' });
 });
 
-app.post('/auth/login', (req, res) => {
+app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
+  const connection = await createConnection();
+
+  try {
+    const [rows] = await connection.execute<mysql.RowDataPacket[]>(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+
+    const user = rows.length ? rows[0] : null;
+
+    if (user && bcrypt.compareSync(password, user.password)) {
+      // gera o jwt
+      // jwt.sign({payloads}, chaveSecreta, {tempoExpiraçãoToken})
+      const token = jwt.sign({ id: user.id, email: user.email }, '123456', {
+        expiresIn: '1h',
+      });
+      res.json({ token });
+    } else {
+      // retorna status 401
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } finally {
+    await connection.end();
+  }
+
   res.send();
 });
 
