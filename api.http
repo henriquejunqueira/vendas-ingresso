@@ -9,7 +9,20 @@ Content-Type: application/json
 }
 
 ###
-@tokenPartner1 = {{loginPartner1.response.body.token}}
+@tokenPartner1 = {{ loginPartner1.response.body.token }}
+
+###
+# @name loginPartner2
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "partner2@user.com",
+    "password": "secret"
+}
+
+###
+@tokenPartner2 = {{ loginPartner2.response.body.token }}
 
 ###
 # @name loginCustomer1
@@ -17,14 +30,14 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "partner1@user.com",
+    "email": "customer1@user.com",
     "password": "secret"
 }
 
 ###
-@tokenPartner1 = {{loginCustomer1.response.body.token}}
+@tokenCustomer1 = {{ loginCustomer1.response.body.token }}
 
-###
+### Criação do partner 1
 POST http://localhost:3000/partners/register
 Content-Type: application/json
 
@@ -33,6 +46,17 @@ Content-Type: application/json
     "email": "partner1@user.com",
     "password": "secret",
     "company_name": "Company Name 1"
+}
+
+### Criação do partner 2
+POST http://localhost:3000/partners/register
+Content-Type: application/json
+
+{
+    "name": "Partner 2",
+    "email": "partner2@user.com",
+    "password": "secret",
+    "company_name": "Company Name 2"
 }
 
 ###
@@ -50,7 +74,7 @@ Content-Type: application/json
 ### Criação do evento pelo parceiro
 POST http://localhost:3000/partners/events
 Content-Type: application/json
-Authorization: Bearer {{tokenPartner1}}
+Authorization: Bearer {{ tokenPartner1 }}
 # Authorization: Bearer {{tokenCustomer1}} # not found
 
 {
@@ -62,12 +86,15 @@ Authorization: Bearer {{tokenPartner1}}
 
 ### Listagem de evento do parceiro
 GET http://localhost:3000/partners/events
+# Authorization: Bearer {{ tokenPartner1 }}
+Authorization: Bearer {{ tokenPartner2 }}
 
 ### Listagem de um evento do parceiro
-GET http://localhost:3000/partners/events/1000
+GET http://localhost:3000/partners/events/1
+Authorization: Bearer {{ tokenPartner1 }}
 
 ### Listagem de eventos (público)
 GET http://localhost:3000/events
 
 ### Listagem de um evento (público)
-GET http://localhost:3000/events/1000
+GET http://localhost:3000/events/1
